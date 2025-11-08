@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Modern note-taking application with rich text editing">
+  <title>Note List App</title>
+  
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="note_list.css">
+
+  <!-- Axios -->
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+  <div class="container" id="appContainer">
+    <div class="top-bar">
+      <div class="theme-toggle">
+        <button id="themeToggle"><i class="fas fa-moon"></i></button>
+      </div>
+
+      <div class="background-selector">
+        <label for="bgTheme">Background:</label>
+        <select id="bgTheme">
+          <option value="">Default</option>
+          <option value="blue">Blue Grid</option>
+          <option value="green">Green Grid</option>
+          <option value="yellow">Yellow Grid</option>
+          <option value="black">Black Grid</option>
+          <option value="purple">Purple Grid</option>
+        </select>
+      </div>
+    </div>
+
+    <h1>📝 My Note List</h1>
+
+    <div class="note-form">
+      <input type="text" id="title" placeholder="Note title">
+      
+      <!-- Rich Text Editor Toolbar -->
+      <div class="editor-toolbar" id="editorToolbar">
+        <button class="toolbar-btn" data-command="formatBlock" data-value="h1" title="Heading 1">
+          <i class="fas fa-heading"></i> H1
+        </button>
+        <button class="toolbar-btn" data-command="formatBlock" data-value="h2" title="Heading 2">
+          <i class="fas fa-heading"></i> H2
+        </button>
+        <button class="toolbar-btn" data-command="formatBlock" data-value="h3" title="Heading 3">
+          <i class="fas fa-heading"></i> H3
+        </button>
+        <button class="toolbar-btn" data-command="formatBlock" data-value="h4" title="Heading 4">
+          <i class="fas fa-heading"></i> H4
+        </button>
+        <button class="toolbar-btn" data-command="formatBlock" data-value="h5" title="Heading 5">
+          <i class="fas fa-heading"></i> H5
+        </button>
+        <button class="toolbar-btn" data-command="formatBlock" data-value="h6" title="Heading 6">
+          <i class="fas fa-heading"></i> H6
+        </button>
+        <button class="toolbar-btn" data-command="formatBlock" data-value="p" title="Paragraph">
+          <i class="fas fa-paragraph"></i> P
+        </button>
+        <button class="toolbar-btn" data-command="insertUnorderedList" title="Bullet List">
+          <i class="fas fa-list-ul"></i>
+        </button>
+        <button class="toolbar-btn" data-command="insertOrderedList" title="Numbered List">
+          <i class="fas fa-list-ol"></i>
+        </button>
+        <button class="toolbar-btn" id="addTodoBtn" title="Add To-Do Item">
+          <i class="fas fa-check-square"></i> To-Do
+        </button>
+        <button class="toolbar-btn" data-command="bold" title="Bold">
+          <i class="fas fa-bold"></i>
+        </button>
+        <button class="toolbar-btn" data-command="italic" title="Italic">
+          <i class="fas fa-italic"></i>
+        </button>
+        <button class="toolbar-btn" data-command="underline" title="Underline">
+          <i class="fas fa-underline"></i>
+        </button>
+        <div class="color-picker-wrapper">
+          <button class="toolbar-btn" id="colorPickerBtn" title="Text Color">
+            <i class="fas fa-palette"></i> Color
+          </button>
+          <div class="color-picker-dropdown" id="colorPickerDropdown">
+            <div class="color-picker-header">Text Color</div>
+            <div class="color-presets">
+              <div class="color-preset" data-color="#000000" style="background: #000000;" title="Black"></div>
+              <div class="color-preset" data-color="#FFFFFF" style="background: #FFFFFF; border: 1px solid #ccc;" title="White"></div>
+              <div class="color-preset" data-color="#FF0000" style="background: #FF0000;" title="Red"></div>
+              <div class="color-preset" data-color="#00FF00" style="background: #00FF00;" title="Green"></div>
+              <div class="color-preset" data-color="#0000FF" style="background: #0000FF;" title="Blue"></div>
+              <div class="color-preset" data-color="#FFFF00" style="background: #FFFF00;" title="Yellow"></div>
+              <div class="color-preset" data-color="#FF00FF" style="background: #FF00FF;" title="Magenta"></div>
+              <div class="color-preset" data-color="#00FFFF" style="background: #00FFFF;" title="Cyan"></div>
+              <div class="color-preset" data-color="#FFA500" style="background: #FFA500;" title="Orange"></div>
+              <div class="color-preset" data-color="#800080" style="background: #800080;" title="Purple"></div>
+              <div class="color-preset" data-color="#FFC0CB" style="background: #FFC0CB;" title="Pink"></div>
+              <div class="color-preset" data-color="#A52A2A" style="background: #A52A2A;" title="Brown"></div>
+            </div>
+            <div class="color-rgb-input">
+              <label>RGB:</label>
+              <input type="text" id="rgbColorInput" placeholder="#000000" pattern="^#[0-9A-Fa-f]{6}$">
+              <button class="apply-rgb-btn" id="applyRgbBtn">Apply</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="content-editable" id="content" contenteditable="true" placeholder="Write your note here..."></div>
+      <button id="addNote">Add Note</button>
+    </div>
+
+    <h2>Your Notes</h2>
+    <div id="noteContainer" class="note-container"></div>
+  </div>
+
+  <footer class="app-footer">
+    <div class="footer-content">
+      <div class="footer-section">
+        <h3>Note List App</h3>
+        <p>A modern note-taking application with rich text editing, to-do lists, and customizable themes.</p>
+      </div>
+      
+      <div class="footer-section">
+        <h4>Connect With Us</h4>
+        <div class="social-links">
+          <a href="https://github.com" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+            <i class="fab fa-github"></i>
+          </a>
+          <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" aria-label="Twitter">
+            <i class="fab fa-twitter"></i>
+          </a>
+          <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+            <i class="fab fa-linkedin"></i>
+          </a>
+          <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+            <i class="fab fa-facebook"></i>
+          </a>
+          <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+            <i class="fab fa-instagram"></i>
+          </a>
+        </div>
+      </div>
+      
+      <div class="footer-section">
+        <h4>Features</h4>
+        <ul class="footer-links">
+          <li>Rich Text Editor</li>
+          <li>To-Do Lists</li>
+          <li>Dark Mode</li>
+          <li>Custom Backgrounds</li>
+        </ul>
+      </div>
+    </div>
+    
+    <div class="footer-bottom">
+      <p>&copy; 2024 Note List App. All rights reserved.</p>
+      <p class="footer-meta">Made with <i class="fas fa-heart" style="color: #ef4444;"></i> for productivity</p>
+    </div>
+  </footer>
+
+  <script src="note_list.js"></script>
+</body>
+</html>
