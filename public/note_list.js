@@ -9,6 +9,215 @@ const appContainer = document.getElementById('appContainer');
 const editorToolbar = document.getElementById('editorToolbar');
 const addTodoBtn = document.getElementById('addTodoBtn');
 
+// Check authentication
+function checkAuth() {
+  const token = localStorage.getItem('authToken');
+  if (!token) {
+    window.location.href = '/auth.html';
+    return false;
+  }
+  return true;
+}
+
+// Get auth token for API requests
+function getAuthHeaders() {
+  const token = localStorage.getItem('authToken');
+  return {
+    'Authorization': `Bearer ${token}`,
+    'Content-Type': 'application/json'
+  };
+}
+
+// Verify token on page load
+window.addEventListener('DOMContentLoaded', async () => {
+  if (!checkAuth()) return;
+
+  try {
+    const token = localStorage.getItem('authToken');
+    const response = await axios.get('/api/auth/verify', {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+    if (!response.data.success) {
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('userId');
+      localStorage.removeItem('userName');
+      window.location.href = '/auth.html';
+      return;
+    }
+
+    // Update header with username
+    const userName = response.data.user?.name || localStorage.getItem('userName');
+    if (userName) {
+      const headerUsername = document.getElementById('headerUsername');
+      if (headerUsername) {
+        headerUsername.textContent = `${userName}'s Note List`;
+      }
+      localStorage.setItem('userName', userName);
+    }
+
+    // Add logout button and profile image
+    addLogoutButton();
+    loadUserProfileImage();
+  } catch (error) {
+    console.error('Auth verification failed:', error);
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('userId');
+    localStorage.removeItem('userName');
+    window.location.href = '/auth.html';
+  }
+});
+
+// Load user profile image
+async function loadUserProfileImage() {
+  if (!checkAuth()) return;
+
+  try {
+    const token = localStorage.getItem('authToken');
+    const response = await axios.get('/api/auth/profile', {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+    if (response.data.success) {
+      const user = response.data.user;
+      updateProfileImageDisplay(user.profile_image);
+    }
+  } catch (error) {
+    console.error('Error loading profile image:', error);
+    // Show default icon if error
+    updateProfileImageDisplay(null);
+  }
+}
+
+// Update profile image display in top bar
+function updateProfileImageDisplay(profileImage) {
+  const topBar = document.querySelector('.top-bar');
+  if (!topBar) return;
+
+  // Remove existing profile image and dropdown if any
+  const existingProfile = document.getElementById('profileImageBtn');
+  if (existingProfile) {
+    existingProfile.remove();
+  }
+  const existingDropdown = document.getElementById('profileDropdown');
+  if (existingDropdown) {
+    existingDropdown.remove();
+  }
+
+  // Create profile image button container
+  const profileContainer = document.createElement('div');
+  profileContainer.id = 'profileContainer';
+  profileContainer.style.cssText = 'position: relative; display: inline-block;';
+
+  // Create profile image button
+  const profileBtn = document.createElement('button');
+  profileBtn.id = 'profileImageBtn';
+  profileBtn.type = 'button';
+  profileBtn.style.cssText = 'width: 45px; height: 45px; border-radius: 50%; overflow: hidden; border: 2px solid var(--btn-bg); cursor: pointer; display: flex; align-items: center; justify-content: center; background: var(--bg-color); transition: all 0.3s ease; box-shadow: var(--shadow-md); flex-shrink: 0; padding: 0;';
+
+  if (profileImage) {
+    // Show user's profile image
+    const img = document.createElement('img');
+    img.src = profileImage;
+    img.alt = 'Profile';
+    img.style.cssText = 'width: 100%; height: 100%; object-fit: cover;';
+    profileBtn.appendChild(img);
+  } else {
+    // Show human icon
+    const icon = document.createElement('i');
+    icon.className = 'fas fa-user';
+    icon.style.cssText = 'font-size: 24px; color: var(--btn-bg);';
+    profileBtn.appendChild(icon);
+  }
+
+  profileBtn.addEventListener('mouseenter', () => {
+    profileBtn.style.transform = 'translateY(-2px) scale(1.05)';
+    profileBtn.style.boxShadow = 'var(--shadow-lg)';
+  });
+  profileBtn.addEventListener('mouseleave', () => {
+    profileBtn.style.transform = 'translateY(0) scale(1)';
+    profileBtn.style.boxShadow = 'var(--shadow-md)';
+  });
+
+  // Create dropdown menu
+  const dropdown = document.createElement('div');
+  dropdown.id = 'profileDropdown';
+  dropdown.style.cssText = 'display: none; position: absolute; right: 0; top: calc(100% + 8px); background: var(--card-bg); border-radius: var(--border-radius); box-shadow: var(--shadow-lg); min-width: 180px; z-index: 1000; overflow: hidden; border: 1px solid var(--select-border);';
+
+  // Profile link
+  const profileLink = document.createElement('a');
+  profileLink.href = '/profile.html';
+  profileLink.style.cssText = 'display: flex; align-items: center; gap: var(--spacing-sm); padding: var(--spacing-md); color: var(--text-color); text-decoration: none; transition: background 0.2s ease; font-size: var(--font-size-sm);';
+  profileLink.innerHTML = '<i class="fas fa-user-circle"></i> Profile';
+  profileLink.addEventListener('mouseenter', () => {
+    profileLink.style.background = 'var(--bg-color)';
+  });
+  profileLink.addEventListener('mouseleave', () => {
+    profileLink.style.background = 'transparent';
+  });
+
+  // Logout button
+  const logoutLink = document.createElement('button');
+  logoutLink.type = 'button';
+  logoutLink.style.cssText = 'width: 100%; display: flex; align-items: center; gap: var(--spacing-sm); padding: var(--spacing-md); color: var(--delete-color); text-decoration: none; transition: background 0.2s ease; font-size: var(--font-size-sm); background: none; border: none; cursor: pointer; text-align: left; border-top: 1px solid var(--select-border);';
+  logoutLink.innerHTML = '<i class="fas fa-sign-out-alt"></i> Logout';
+  logoutLink.addEventListener('click', () => {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('userId');
+    localStorage.removeItem('userName');
+    window.location.href = '/auth.html';
+  });
+  logoutLink.addEventListener('mouseenter', () => {
+    logoutLink.style.background = 'var(--bg-color)';
+  });
+  logoutLink.addEventListener('mouseleave', () => {
+    logoutLink.style.background = 'transparent';
+  });
+
+  dropdown.appendChild(profileLink);
+  dropdown.appendChild(logoutLink);
+
+  // Toggle dropdown on click
+  profileBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const isVisible = dropdown.style.display === 'block';
+    dropdown.style.display = isVisible ? 'none' : 'block';
+  });
+
+  // Close dropdown when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!profileContainer.contains(e.target)) {
+      dropdown.style.display = 'none';
+    }
+  });
+
+  profileContainer.appendChild(profileBtn);
+  profileContainer.appendChild(dropdown);
+
+  // Add to top bar (before userActions or at the end)
+  const userActions = document.getElementById('userActions');
+  if (userActions) {
+    topBar.insertBefore(profileContainer, userActions);
+  } else {
+    topBar.appendChild(profileContainer);
+  }
+}
+
+// Add logout button (kept for backward compatibility, but logout is now in dropdown)
+function addLogoutButton() {
+  // Remove old logout button if it exists (logout is now in profile dropdown)
+  const oldLogoutBtn = document.getElementById('logoutBtn');
+  const userActions = document.getElementById('userActions');
+  if (oldLogoutBtn || userActions) {
+    if (userActions) {
+      userActions.remove();
+    }
+    if (oldLogoutBtn) {
+      oldLogoutBtn.remove();
+    }
+  }
+}
+
 // CSS-based background patterns (always visible, no external dependencies)
 // Using more visible patterns with higher opacity for better visibility
 const backgrounds = {
@@ -366,8 +575,11 @@ function setupTodosInContent(element) {
 
 // Load notes
 async function loadNotes() {
-  const res = await axios.get(API_URL);
-  const notes = res.data;
+  if (!checkAuth()) return;
+  
+  try {
+    const res = await axios.get(API_URL, { headers: getAuthHeaders() });
+    const notes = res.data;
   noteContainer.innerHTML = '';
 
   notes.forEach(note => {
@@ -711,32 +923,69 @@ async function loadNotes() {
     setupTodosInContent(editContent);
 
     div.querySelector('.save-btn').addEventListener('click', async () => {
+      if (!checkAuth()) return;
       const newTitle = div.querySelector('.edit-title').value.trim();
       const newContent = div.querySelector('.edit-content').innerHTML.trim();
       if (!newTitle || !newContent) return alert('Title & content required');
-      await axios.put(`${API_URL}/${note.id}`, { title: newTitle, content: newContent });
-      loadNotes();
+      try {
+        await axios.put(`${API_URL}/${note.id}`, { title: newTitle, content: newContent }, { headers: getAuthHeaders() });
+        loadNotes();
+      } catch (error) {
+        if (error.response?.status === 401 || error.response?.status === 403) {
+          localStorage.removeItem('authToken');
+          localStorage.removeItem('userId');
+          localStorage.removeItem('userName');
+          window.location.href = '/auth.html';
+        } else {
+          alert('Failed to update note. Please try again.');
+        }
+      }
     });
 
     div.querySelector('.delete-btn').addEventListener('click', async () => {
+      if (!checkAuth()) return;
       if (confirm('Are you sure to delete this note?')) {
-        await axios.delete(`${API_URL}/${note.id}`);
-        loadNotes();
+        try {
+          await axios.delete(`${API_URL}/${note.id}`, { headers: getAuthHeaders() });
+          loadNotes();
+        } catch (error) {
+          if (error.response?.status === 401 || error.response?.status === 403) {
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('userId');
+            localStorage.removeItem('userName');
+            window.location.href = '/auth.html';
+          } else {
+            alert('Failed to delete note. Please try again.');
+          }
+        }
       }
     });
 
     noteContainer.appendChild(div);
   });
+  } catch (error) {
+    console.error('Error loading notes:', error);
+    if (error.response?.status === 401 || error.response?.status === 403) {
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('userId');
+      localStorage.removeItem('userName');
+      window.location.href = '/auth.html';
+    } else {
+      alert('Failed to load notes. Please try again.');
+    }
+  }
 }
 
 // Add note
 addNoteBtn.addEventListener('click', async () => {
+  if (!checkAuth()) return;
+  
   const title = titleInput.value.trim();
   const content = contentInput.innerHTML.trim();
   if (!title || !content) return alert('Please enter both title and content');
   
   try {
-    await axios.post(API_URL, { title, content });
+    await axios.post(API_URL, { title, content }, { headers: getAuthHeaders() });
     titleInput.value = '';
     contentInput.innerHTML = '';
     
@@ -750,7 +999,14 @@ addNoteBtn.addEventListener('click', async () => {
     loadNotes();
   } catch (error) {
     console.error('Error adding note:', error);
-    alert('Failed to add note. Please try again.');
+    if (error.response?.status === 401 || error.response?.status === 403) {
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('userId');
+      localStorage.removeItem('userName');
+      window.location.href = '/auth.html';
+    } else {
+      alert('Failed to add note. Please try again.');
+    }
   }
 });
 
@@ -774,5 +1030,7 @@ contentInput.addEventListener('blur', function() {
   }
 });
 
-// Load notes on page load
-loadNotes();
+// Load notes on page load (only if authenticated)
+if (checkAuth()) {
+  loadNotes();
+}

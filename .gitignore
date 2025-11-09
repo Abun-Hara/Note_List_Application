@@ -1,1 +1,5 @@
 node_modules/
+notes.db
+*.db
+database.json
+uploads/

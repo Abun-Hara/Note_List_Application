@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="User Profile - Note List App">
+  <title>Profile - Note List App</title>
+  
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="note_list.css">
+  <link rel="stylesheet" href="profile.css">
+
+  <!-- Axios -->
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+  <div class="container" id="appContainer">
+    <div class="top-bar">
+      <div class="top-bar-left">
+        <a href="/" class="back-btn">
+          <i class="fas fa-arrow-left"></i> Back to Notes
+        </a>
+      </div>
+      <div class="top-bar-right">
+        <button id="logoutBtn" class="logout-btn">
+          <i class="fas fa-sign-out-alt"></i> Logout
+        </button>
+      </div>
+    </div>
+
+    <div class="profile-content">
+      <div class="profile-header">
+        <div class="profile-avatar-container">
+          <div class="profile-avatar" id="profileAvatar">
+            <i class="fas fa-user-circle"></i>
+          </div>
+          <label for="profileImageInput" class="image-upload-label">
+            <i class="fas fa-camera"></i> Change Photo
+          </label>
+          <input type="file" id="profileImageInput" accept="image/*" style="display: none;">
+        </div>
+        <h1 id="profileName">Loading...</h1>
+        <p class="profile-email" id="profileEmail">Loading...</p>
+      </div>
+
+      <div class="profile-stats">
+        <div class="stat-card">
+          <div class="stat-icon">
+            <i class="fas fa-sticky-note"></i>
+          </div>
+          <div class="stat-info">
+            <h3 id="totalNotes">0</h3>
+            <p>Total Notes</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">
+            <i class="fas fa-calendar-alt"></i>
+          </div>
+          <div class="stat-info">
+            <h3 id="memberSince">-</h3>
+            <p>Member Since</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="profile-section">
+        <h2><i class="fas fa-user-edit"></i> Edit Profile</h2>
+        <form id="profileForm" class="profile-form">
+          <div class="form-group">
+            <label for="profileNameInput">Full Name</label>
+            <input type="text" id="profileNameInput" required placeholder="Enter your name">
+          </div>
+          <div class="form-group">
+            <label for="profileEmailInput">Email</label>
+            <input type="email" id="profileEmailInput" required placeholder="Enter your email" readonly>
+            <small class="form-hint">Email cannot be changed</small>
+          </div>
+          <button type="submit" class="save-btn">
+            <i class="fas fa-save"></i> Save Changes
+          </button>
+        </form>
+        <div id="profileError" class="error-message"></div>
+        <div id="profileSuccess" class="success-message"></div>
+      </div>
+
+      <div class="profile-section">
+        <h2><i class="fas fa-key"></i> Change Password</h2>
+        <form id="passwordForm" class="profile-form">
+          <div class="form-group">
+            <label for="currentPassword">Current Password</label>
+            <input type="password" id="currentPassword" required placeholder="Enter current password">
+          </div>
+          <div class="form-group">
+            <label for="newPassword">New Password</label>
+            <input type="password" id="newPassword" required placeholder="At least 6 characters" minlength="6">
+          </div>
+          <div class="form-group">
+            <label for="confirmPassword">Confirm New Password</label>
+            <input type="password" id="confirmPassword" required placeholder="Confirm new password" minlength="6">
+          </div>
+          <button type="submit" class="save-btn">
+            <i class="fas fa-lock"></i> Change Password
+          </button>
+        </form>
+        <div id="passwordError" class="error-message"></div>
+        <div id="passwordSuccess" class="success-message"></div>
+      </div>
+    </div>
+
+    <div class="profile-footer">
+      <p class="footer-developer">Developed by <strong>Abunu Mezgebu</strong></p>
+    </div>
+  </div>
+
+  <script src="profile.js"></script>
+</body>
+</html>
+
