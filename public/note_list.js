@@ -156,26 +156,7 @@ function updateProfileImageDisplay(profileImage) {
     profileLink.style.background = 'transparent';
   });
 
-  // Logout button
-  const logoutLink = document.createElement('button');
-  logoutLink.type = 'button';
-  logoutLink.style.cssText = 'width: 100%; display: flex; align-items: center; gap: var(--spacing-sm); padding: var(--spacing-md); color: var(--delete-color); text-decoration: none; transition: background 0.2s ease; font-size: var(--font-size-sm); background: none; border: none; cursor: pointer; text-align: left; border-top: 1px solid var(--select-border);';
-  logoutLink.innerHTML = '<i class="fas fa-sign-out-alt"></i> Logout';
-  logoutLink.addEventListener('click', () => {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('userId');
-    localStorage.removeItem('userName');
-    window.location.href = '/auth.html';
-  });
-  logoutLink.addEventListener('mouseenter', () => {
-    logoutLink.style.background = 'var(--bg-color)';
-  });
-  logoutLink.addEventListener('mouseleave', () => {
-    logoutLink.style.background = 'transparent';
-  });
-
   dropdown.appendChild(profileLink);
-  dropdown.appendChild(logoutLink);
 
   // Toggle dropdown on click
   profileBtn.addEventListener('click', (e) => {
@@ -186,9 +167,11 @@ function updateProfileImageDisplay(profileImage) {
 
   // Close dropdown when clicking outside
   document.addEventListener('click', (e) => {
-    if (!profileContainer.contains(e.target)) {
-      dropdown.style.display = 'none';
+    // Don't close if clicking inside profile container
+    if (profileContainer.contains(e.target)) {
+      return;
     }
+    dropdown.style.display = 'none';
   });
 
   profileContainer.appendChild(profileBtn);
